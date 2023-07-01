@@ -1,4 +1,4 @@
-apt install libgmp3-dev libmpfr-dev libmpc-dev
+apt install libgmp3-dev libmpfr-dev libmpc-dev texinfo
 curl https://ftp.gnu.org/gnu/gcc/gcc-9.3.0/gcc-9.3.0.tar.gz --output gcc9.3.0.tar.gz
 curl https://ftp.gnu.org/gnu/binutils/binutils-2.34.tar.gz --output binutils-2.34.tar.gz
 mkdir gcc-source
