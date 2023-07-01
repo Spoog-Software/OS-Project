@@ -19,6 +19,6 @@ mkdir build-gcc
 cd build-gcc
 ../gcc-9.3.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers
 make -j6 all-gcc
-make -j6 all-target-libgcc
 make -j6 install-gcc
+make -j6 all-target-libgcc
 make -j6 install-target-libgcc
