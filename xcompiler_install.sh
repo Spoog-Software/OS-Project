@@ -1,6 +1,6 @@
 apt install libgmp3-dev libmpfr-dev libmpc-dev
-# curl https://ftp.gnu.org/gnu/gcc/gcc-9.3.0/gcc-9.3.0.tar.gz --output gcc9.3.0.tar.gz
-# curl https://ftp.gnu.org/gnu/binutils/binutils-2.34.tar.gz --output binutils-2.34.tar.gz
+curl https://ftp.gnu.org/gnu/gcc/gcc-9.3.0/gcc-9.3.0.tar.gz --output gcc9.3.0.tar.gz
+curl https://ftp.gnu.org/gnu/binutils/binutils-2.34.tar.gz --output binutils-2.34.tar.gz
 mkdir gcc-source
 tar -xf gcc9.3.0.tar.gz --directory gcc-source
 tar -xf binutils-2.34.tar.gz --directory gcc-source
@@ -17,7 +17,7 @@ make install
 cd ..
 mkdir build-gcc
 cd build-gcc
-../gcc-x.y.z/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers
+../gcc-9.3.0/configure --target=$TARGET --prefix="$PREFIX" --disable-nls --enable-languages=c,c++ --without-headers
 make -j6 all-gcc
 make -j6 all-target-libgcc
 make -j6 install-gcc
