@@ -1,4 +1,4 @@
-sudo apt install xorriso qemu qemu-system-x86
+sudo apt install xorriso qemu qemu-system-x86 grub-pc-bin
 BINUTILS_PATH=$HOME/opt/cross/bin
 echo "Assembling bootstrap code..." & $BINUTILS_PATH/i686-elf-as boot.s -o boot.o
 echo "Compiling kernel..." & $BINUTILS_PATH/i686-elf-gcc -c kernel.c -o kernel.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra
