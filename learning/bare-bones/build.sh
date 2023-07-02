@@ -1,5 +1,5 @@
 apt install xorriso
-BINUTILS_PATH = $HOME/opt/cross/bin
+BINUTILS_PATH=$HOME/opt/cross/bin
 echo "Assembling bootstrap code..." & $BINUTILS_PATH/i686-elf-as boot.s -o boot.o
 echo "Compiling kernel..." & $BINUTILS_PATH/i686-elf-gcc -c kernel.c -o kernel.o -std=gnu99 -ffreestanding -O2 -Wall -Wextra
 echo "Linking bootstrap and kernel..." & $BINUTILS_PATH/i686-elf-gcc -T linker.ld -o myos.bin -ffreestanding -O2 -nostdlib boot.o kernel.o -lgcc
