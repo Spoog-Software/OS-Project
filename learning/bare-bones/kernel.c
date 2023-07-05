@@ -100,9 +100,10 @@ void terminal_putchar(char c)
         terminal_column += (4 - (terminal_column % 4));
     } else {
         terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
+        terminal_column++;
     }
     
-    if (++terminal_column == VGA_WIDTH) {
+    if (terminal_column == VGA_WIDTH) {
         terminal_column = 0;
         if (++terminal_row == VGA_HEIGHT)
         {
@@ -110,7 +111,7 @@ void terminal_putchar(char c)
                 terminal_buffer[i-VGA_WIDTH] = terminal_buffer[i];
             }
             for (size_t i = VGA_WIDTH * (VGA_HEIGHT - 1); i < VGA_WIDTH * VGA_HEIGHT; i++) {
-                terminal_buffer[i] = '\0';
+                terminal_buffer[i] = 'D';
             }
             terminal_row--;
         }
@@ -140,5 +141,5 @@ void kernel_main(void)
     for (size_t i = 0; i < VGA_HEIGHT-2; i++) {
         terminal_writestring("EEEEE\n");
     }
-    terminal_writestring("SINQIWSNIQUWSNUIQNSUINQUISHELPQWDNUQWDINQWUDSINQIWSNIQUWSNUIQNSUINQUISHELPQWDNUQWDINQWUD");
+    terminal_writestring("SINQIWSNIQUWSNUSSSIQNSUINQUIDSSINQWUDSINQIWSNIQUWSNUIQNSUINQUISHELPQWDNUQWDINQWUD");
 }
