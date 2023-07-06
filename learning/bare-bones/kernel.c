@@ -139,15 +139,41 @@ void terminal_writestring(const char* data)
     terminal_write(data, strlen(data));
 }
 
+static inline uint8_t inb(uint16_t port)
+{
+    uint8_t ret;
+    asm volatile ( "inb %1, %0"
+                   : "=a"(ret)
+                   : "Nd"(port)
+                   : "memory");
+    return ret;
+}
+
 void kernel_main(void) 
 {
     /* Initialize terminal interface */
     terminal_initialize();
  
-    /* Newline support is left as an exercise. */
-    terminal_writestring("Hello, kernel World!\n");
-    for (size_t i = 0; i < VGA_HEIGHT-2; i++) {
-        terminal_putchar((char) i);
-        terminal_putchar('\n');
+    terminal_writestring("\n\n\n\n\n\n\n\n");
+
+    int colors[] = {
+        VGA_COLOR_RED,
+        VGA_COLOR_GREEN,
+        VGA_COLOR_BLUE,
+        VGA_COLOR_MAGENTA,
+        VGA_COLOR_WHITE
+    };
+
+    for (long unsigned int color = 0; color < sizeof(colors)/sizeof(int); color++) {
+        terminal_setcolor(vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
+        terminal_writestring("                                 ");
+        terminal_setcolor(vga_entry_color(VGA_COLOR_WHITE, colors[color]));
+        if (color == 2) {
+            terminal_writestring("Hello, world!\n");
+        } else {
+            terminal_writestring("             \n");
+        }
     }
+    long unsigned int color = sizeof(colors);
+    terminal_setcolor(vga_entry_color(VGA_COLOR_BLACK, colors[color]));
 }
