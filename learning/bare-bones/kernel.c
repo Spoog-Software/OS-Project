@@ -32,6 +32,14 @@ enum vga_color {
     VGA_COLOR_WHITE = 15,
 };
 
+char key_events[] = {
+    ' ', ' ', '1', '2', '3', '4', '5', '6', '7', '8', '9', '0',
+    '-', '=', '\b', '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U',
+    'I', 'O', 'P', '[', ']', '\n', ' ', 'A', 'S', 'D', 'F', 'G',
+    'H', 'J', 'K', 'L', ';', '\'', '`', ' ', '\\', 'Z', 'X', 'C', 'V', 'B', 'N', 'M',
+    ',', '.', '/', ' ', ' ', ' ', ' ', ' '
+};
+
 static const int SCROLL_AMOUNT = 1;
 
 static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) 
@@ -149,31 +157,43 @@ static inline uint8_t inb(uint16_t port)
     return ret;
 }
 
+static inline void outb(uint16_t port, uint8_t val)
+{
+    asm volatile ( "outb %0, %1" : : "a"(val), "Nd"(port) :"memory");
+    /* There's an outb %al, $imm8  encoding, for compile-time constant port numbers that fit in 8b.  (N constraint).
+     * Wider immediate constants would be truncated at assemble-time (e.g. "i" constraint).
+     * The  outb  %al, %dx  encoding is the only option for all other cases.
+     * %1 expands to %dx because  port  is a uint16_t.  %w1 could be used if we had the port number a wider C type */
+}
+
 void kernel_main(void) 
 {
     /* Initialize terminal interface */
     terminal_initialize();
- 
-    terminal_writestring("\n\n\n\n\n\n\n\n");
 
-    int colors[] = {
-        VGA_COLOR_RED,
-        VGA_COLOR_GREEN,
-        VGA_COLOR_BLUE,
-        VGA_COLOR_MAGENTA,
-        VGA_COLOR_WHITE
-    };
+    // outb(0x60, 0xed);
+    // outb(0x60, 0b00000001);
 
-    for (long unsigned int color = 0; color < sizeof(colors)/sizeof(int); color++) {
-        terminal_setcolor(vga_entry_color(VGA_COLOR_LIGHT_GREY, VGA_COLOR_BLACK));
-        terminal_writestring("                                 ");
-        terminal_setcolor(vga_entry_color(VGA_COLOR_WHITE, colors[color]));
-        if (color == 2) {
-            terminal_writestring("Hello, world!\n");
-        } else {
-            terminal_writestring("             \n");
+    // uint8_t response = inb(0x60);
+
+    // if (response == 0xfa) {
+    //     terminal_writestring("toggle worked");
+    // } else if (response == 0xfe) {
+    //     terminal_writestring("resend");
+    // } else {
+    //     terminal_writestring("didn't do anything");
+    // }
+
+    // uint8_t previous_input = 0;
+    uint8_t previous_input = 0;
+    while (true) {
+        uint8_t input = inb(0x60);
+        if (previous_input != input) {
+            char charcode = key_events[input];
+            terminal_putchar(charcode);
+            previous_input = input;
         }
     }
-    long unsigned int color = sizeof(colors);
-    terminal_setcolor(vga_entry_color(VGA_COLOR_BLACK, colors[color]));
+
+
 }
