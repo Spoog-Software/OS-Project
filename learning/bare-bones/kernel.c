@@ -37,10 +37,15 @@ char key_events[] = {
     '-', '=', '\b', '\t', 'Q', 'W', 'E', 'R', 'T', 'Y', 'U',
     'I', 'O', 'P', '[', ']', '\n', ' ', 'A', 'S', 'D', 'F', 'G',
     'H', 'J', 'K', 'L', ';', '\'', '`', ' ', '\\', 'Z', 'X', 'C', 'V', 'B', 'N', 'M',
-    ',', '.', '/', ' ', ' ', ' ', ' ', ' '
+    ',', '.', '/', ' ', ' ', ' ', ' ', ' ',
 };
 
+bool key_states[128] = {0};
+
 static const int SCROLL_AMOUNT = 1;
+
+#define PS2_KEYBOARD 0x60
+#define KEY_RELEASED_THRESHOLD 0x80
 
 static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) 
 {
@@ -118,6 +123,13 @@ void terminal_putchar(char c)
         terminal_column = 0;
     } else if (c == '\t') {
         terminal_column += (4 - (terminal_column % 4));
+    } else if (c == '\b') {
+        terminal_column--;
+        if (terminal_column < 0) {
+            terminal_column = 0;
+            terminal_row -= 1;
+        }
+        terminal_putentryat(' ', terminal_color, terminal_column, terminal_row);
     } else {
         terminal_putentryat(c, terminal_color, terminal_column, terminal_row);
         terminal_column++;
@@ -147,6 +159,27 @@ void terminal_writestring(const char* data)
     terminal_write(data, strlen(data));
 }
 
+void print_int(uint8_t code) {
+    int digits_reversed[3];
+
+    int i = 0;
+    while (code > 0) {
+        digits_reversed[i] = code % 10;
+        code /= 10;
+        i++;
+    }
+
+    int first = digits_reversed[2]+0x30;
+    int second = digits_reversed[1]+0x30;
+    if (first != 0x30) {
+        terminal_putchar(first);
+    }
+    if (second != 0x30 || first != 0x30) {
+        terminal_putchar(second);
+    }
+    terminal_putchar(digits_reversed[0]+0x30);
+}
+
 static inline uint8_t inb(uint16_t port)
 {
     uint8_t ret;
@@ -171,29 +204,19 @@ void kernel_main(void)
     /* Initialize terminal interface */
     terminal_initialize();
 
-    // outb(0x60, 0xed);
-    // outb(0x60, 0b00000001);
-
-    // uint8_t response = inb(0x60);
-
-    // if (response == 0xfa) {
-    //     terminal_writestring("toggle worked");
-    // } else if (response == 0xfe) {
-    //     terminal_writestring("resend");
-    // } else {
-    //     terminal_writestring("didn't do anything");
-    // }
-
-    // uint8_t previous_input = 0;
-    uint8_t previous_input = 0;
+    // Keyboard polling loop
     while (true) {
-        uint8_t input = inb(0x60);
-        if (previous_input != input) {
-            char charcode = key_events[input];
-            terminal_putchar(charcode);
-            previous_input = input;
+        uint8_t input = inb(PS2_KEYBOARD);
+        uint8_t index = (input > KEY_RELEASED_THRESHOLD) ? input - KEY_RELEASED_THRESHOLD : input;
+        uint8_t charcode = (uint8_t) key_events[index]; // Get character from scancode, e.g.
+        if (input > KEY_RELEASED_THRESHOLD) {
+            key_states[charcode] = false;
+        } else {
+            // Write character if it has just been pressed
+            if (!key_states[charcode]) {
+                terminal_putchar(charcode);
+            }
+            key_states[charcode] = true;
         }
     }
-
-
 }
