@@ -32,6 +32,8 @@ enum vga_color {
     VGA_COLOR_WHITE = 15,
 };
 
+static const int SCROLL_AMOUNT = 1;
+
 static inline uint8_t vga_entry_color(enum vga_color fg, enum vga_color bg) 
 {
     // bg occupies upper 4 bits, fg occupies bottom 4
@@ -91,6 +93,16 @@ void terminal_putentryat(char c, uint8_t color, size_t x, size_t y)
     terminal_buffer[index] = vga_entry(c, color);
 }
 
+static inline void terminal_scroll(int num_lines) {
+    for (size_t i = VGA_WIDTH*num_lines; i < VGA_WIDTH*VGA_HEIGHT; i++) {
+        terminal_buffer[i-VGA_WIDTH*num_lines] = terminal_buffer[i];
+    }
+    for (size_t i = VGA_WIDTH * (VGA_HEIGHT - num_lines); i < VGA_WIDTH * VGA_HEIGHT; i++) {
+        terminal_buffer[i] = ' ';
+    }
+    terminal_row -= num_lines;
+}
+
 void terminal_putchar(char c) 
 {
     if (c == '\n') {
@@ -103,17 +115,13 @@ void terminal_putchar(char c)
         terminal_column++;
     }
     
+    // Check if current column exceeds the screen width
     if (terminal_column == VGA_WIDTH) {
         terminal_column = 0;
+        // Move onto the next row; if we reach the bottom, scroll everything up
         if (++terminal_row == VGA_HEIGHT)
         {
-            for (size_t i = VGA_WIDTH; i < VGA_WIDTH*VGA_HEIGHT; i++) {
-                terminal_buffer[i-VGA_WIDTH] = terminal_buffer[i];
-            }
-            for (size_t i = VGA_WIDTH * (VGA_HEIGHT - 1); i < VGA_WIDTH * VGA_HEIGHT; i++) {
-                terminal_buffer[i] = 'D';
-            }
-            terminal_row--;
+            terminal_scroll(SCROLL_AMOUNT);
         }
     }
 }
@@ -139,7 +147,7 @@ void kernel_main(void)
     /* Newline support is left as an exercise. */
     terminal_writestring("Hello, kernel World!\n");
     for (size_t i = 0; i < VGA_HEIGHT-2; i++) {
-        terminal_writestring("EEEEE\n");
+        terminal_putchar((char) i);
+        terminal_putchar('\n');
     }
-    terminal_writestring("SINQIWSNIQUWSNUSSSIQNSUINQUIDSSINQWUDSINQIWSNIQUWSNUIQNSUINQUISHELPQWDNUQWDINQWUD");
 }
