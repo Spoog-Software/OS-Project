@@ -1,9 +1,15 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 
-double abs(double x) {
-    uint64_t bits = (*(uint64_t*) &x);
-    uint64_t result = bits && ~(1 << 63);
-    return *(double*)&result;
+double fabs(double x) {
+    return x >= 0 ? x : -x;
+}
+
+int main() {
+    for (int i = 0; i < 1000000; i++) {
+        double x = (double) rand();
+        printf("abs(%f)=%f\n", x, fabs(x));
+    }
 }
